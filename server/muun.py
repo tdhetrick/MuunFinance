@@ -4,10 +4,13 @@ from flask_jwt_extended import JWTManager, create_access_token, create_refresh_t
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import timedelta
 import os
+from database import db
+
+
+app = Flask(__name__)
 
 from model import *
 
-app = Flask(__name__)
 
 # Configure Flask app
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///muun.db'
@@ -15,13 +18,13 @@ app.config['JWT_SECRET_KEY'] = 'darthMaulIsMuun'
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=1)  
 
 
-db = SQLAlchemy(app)
+
 jwt = JWTManager(app)
 
 
-#db.init_app(app)
+db.init_app(app)
 with app.app_context():
-    db.create_all()
+    db.create_all()  
     
 @app.route('/')  # This route handles the default page
 def index():
