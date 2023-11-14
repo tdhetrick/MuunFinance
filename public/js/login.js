@@ -14,9 +14,15 @@ export default {
 
     },
     template: `
-
+    <style>
+        .form-container {
+            max-width: 400px; /* Adjust the size of the form */
+            margin: auto; /* Center the form */
+            padding-top: 50px; /* Add some space at the top */
+        }
+    </style>
     <!-- Login Form -->
-    <div class="w3-card-4" v-if="showLogin">
+    <div class="w3-card-4 form-container" v-if="showLogin">
         <div class="w3-container w3-teal">
             <h2>Login</h2>
         </div>
@@ -37,7 +43,7 @@ export default {
     </div>
 
     <!-- Register Form -->
-    <div class="w3-card-4" v-if="showRegister">
+    <div class="w3-card-4 form-container" v-if="showRegister">
         <div class="w3-container w3-teal">
             <h2>Register</h2>
         </div>
@@ -68,20 +74,23 @@ export default {
             this.showRegister = !this.showRegister;
         },
         login() {
-            axios.post('http://127.0.0.1:5000/login', this.user)
+            ajx.post('/login', this.user)
                 .then(response => {
                     // Handle success, save token to localStorage
                     localStorage.setItem('access_token', response.data.access_token);
                     this.loggedIn = true;
                     // Redirect to another page or do something else
+                    console.log('Login Success!')
+                    this.$emit('loggedin', true)
                 })
                 .catch(error => {
                     console.error('There was an error!', error);
                     this.loggedIn = false;
+                    this.$emit('loggedin', false)
                 });
         },
         register() {
-            axios.post('http://127.0.0.1:5000/register', this.user)
+            ajx.post('/register', this.user)
                 .then(response => {
                     // Handle success
                     alert('Registration successful. You can now log in.');
