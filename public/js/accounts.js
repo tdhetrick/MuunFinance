@@ -17,18 +17,23 @@ export default  {
                     this.accounts = response.data
                 })
                 .catch(error => {
-                    console.error('There was an error getting accounts!', error);                 
+                    handleResponseError(error)              
                 });
         },
         addAccount() {
+            let app = this;
             ajx.post('/add_account', this.account)
                 .then(response => {
                     this.account = { name: '', balance: 0, account_type: '' };
-                    alert("Account added")
+                    
+                    app.getAccounts()
                 })
                 .catch(error => {
                     alert("Failed to add Account")       
                 });
+        },
+        formatCurrency(value) {
+            return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
         }
     },
     template: `
@@ -38,27 +43,27 @@ export default  {
         <thead>
             <tr class="w3-teal">
                 <th>Account Name</th>
-                <th>Balance</th>
+                <th>Starting Balance</th>
                 <th>Account Type</th>
             </tr>
         </thead>
         <tbody>
             <tr v-for="account in accounts" :key="account.id">
                 <td>{{ account.name }}</td>
-                <td>{{ account.balance }}</td>
+                <td>{{ formatCurrency(account.balance) }}</td>
                 <td>{{ account.account_type }}</td>
             </tr>
         </tbody>
     </table>
         <div class="w3-container form-container">
             <h2>Add Account</h2>
-            <form @submit.prevent="addAccount" class="w3-container w3-card-4 w3-light-grey w3-text-blue w3-margin">
+            <form @submit.prevent="addAccount" class="w3-container w3-card-4 w3-light-grey w3-text-blue w3-margin w3-padding">
                 <p>
                     <label class="w3-text-blue"><b>Account Name</b></label>
                     <input class="w3-input w3-border" type="text" v-model="account.name" required>
                 </p>
                 <p>
-                    <label class="w3-text-blue"><b>Balance</b></label>
+                    <label class="w3-text-blue"><b>Starting Balance</b></label>
                     <input class="w3-input w3-border" type="number" v-model.number="account.balance" required>
                 </p>
                 <p>
@@ -69,7 +74,7 @@ export default  {
                         <option value="Savings">Savings</option>
                         <option value="Credit Card">Credit Card</option>
                         <option value="Investment">Investment</option>
-                        <!-- Add more account types as needed -->
+                        
                     </select>
                     </p>
             

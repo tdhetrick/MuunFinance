@@ -16,7 +16,7 @@ class User(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    # Relationships
+
     categories = relationship("Category", backref="user")
     accounts = relationship("Account", backref="user")
     transactions = relationship("Transaction", backref="user")
@@ -34,6 +34,7 @@ class Category(db.Model):
     description = db.Column(db.String(255))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
 
 class Account(db.Model):
     __tablename__ = 'accounts'
@@ -46,7 +47,6 @@ class Account(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    # Relationship
     transactions = relationship("Transaction", backref="account")
 
 class Transaction(db.Model):
@@ -62,6 +62,8 @@ class Transaction(db.Model):
     description = db.Column(db.String(255))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    category = relationship("Category")
 
 class Budget(db.Model):
     __tablename__ = 'budgets'
@@ -70,10 +72,11 @@ class Budget(db.Model):
     user_id = db.Column(db.Integer, ForeignKey('users.user_id'), nullable=False)
     category_id = db.Column(db.Integer, ForeignKey('categories.category_id'), nullable=False)
     amount = db.Column(db.Float, nullable=False)
-    start_date = db.Column(db.DateTime, nullable=False)
-    end_date = db.Column(db.DateTime, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    category = relationship("Category")
+
 
 class TransactionImport(db.Model):
     __tablename__ = 'transaction_imports'

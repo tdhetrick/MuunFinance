@@ -22,7 +22,7 @@ export default {
         }
     </style>
     <!-- Login Form -->
-    <div class="w3-card-4 form-container" v-if="showLogin">
+    <div class="w3-card-4 form-container w3-margin-top" v-if="showLogin">
         <div class="w3-container w3-teal">
             <h2>Login</h2>
         </div>
