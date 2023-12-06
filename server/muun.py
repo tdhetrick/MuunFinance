@@ -9,6 +9,7 @@ from database import db
 import bcrypt
 
 app = Flask(__name__)
+app.secret_key = 'darthMaulIsMuun'
 
 from model import *
 
