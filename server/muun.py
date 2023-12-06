@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify, make_response, send_from_directory, session
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import func
+from sqlalchemy import func, extract
 from flask_jwt_extended import JWTManager, create_access_token, create_refresh_token, get_jwt_identity, jwt_required,unset_jwt_cookies
 from flask_bcrypt import Bcrypt
 from datetime import timedelta
@@ -46,6 +46,9 @@ def register_user():
     existing_user = User.query.filter_by(email=data['email']).first()
     if existing_user:
         return jsonify({'message': 'Email already exists.'}), 409
+    
+    if data['reg_code'] != 'UNCC':
+        return jsonify({'message': 'Incorrect Registration Code.'}), 400
 
 
     hashed_password = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt())
@@ -68,7 +71,7 @@ def login_user():
     
     if not user or not bcrypt.checkpw(data['password'].encode('utf-8'),user.password_hash.encode('utf-8')):
     
-        return make_response('Could not verify', 401, {'WWW-Authenticate': 'Basic realm="Login required!"'})
+        return make_response('Could not verify', 401)
 
     access_token = create_access_token(identity=user.user_id)
     refresh_token = create_refresh_token(identity=user.user_id)
@@ -186,7 +189,31 @@ def get_categories():
         ]
         return jsonify(category_list), 200
     except Exception as e:
-        return jsonify({'error': str(e)}), 500           
+        return jsonify({'error': str(e)}), 500 
+    
+@app.route('/category_totals', methods=['GET'])
+@jwt_required()
+def get_category_totals():
+    current_user_id = get_jwt_identity()
+
+    try:        
+        category_totals = db.session.query(
+            Category.name,
+            func.sum(Transaction.amount).label('total_spent')
+        ).join(Transaction, Category.category_id == Transaction.category_id)\
+         .filter(Transaction.user_id == current_user_id)\
+         .group_by(Category.name)\
+         .all()
+
+       
+        category_totals_list = [
+            {'category': cat.name, 'total_spent': cat.total_spent}
+            for cat in category_totals
+        ]
+
+        return jsonify(category_totals_list), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500              
   
  #****************  BUDGET  ************
  
@@ -323,7 +350,46 @@ def update_transaction(transaction_id):
         return jsonify({"message": "Transaction updated successfully."}), 200
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": str(e)}), 500      
+        return jsonify({"error": str(e)}), 500  
+    
+    
+@app.route('/monthly_net_income', methods=['GET'])
+@jwt_required()
+def get_monthly_net_income():
+    current_user_id = get_jwt_identity()
+
+    try:
+        # Aggregate transaction amounts by month and type
+        monthly_totals = db.session.query(
+            extract('year', Transaction.date).label('year'),
+            extract('month', Transaction.date).label('month'),
+            Transaction.type,
+            func.sum(Transaction.amount).label('total')
+        ).filter_by(
+            user_id=current_user_id
+        ).group_by(
+            'year', 'month', Transaction.type
+        ).all()
+        print(monthly_totals)
+        # Prepare the net income data
+        net_income_data = {}
+        for year, month, type, total in monthly_totals:
+            year_month = f"{year}-{month:02d}"
+            if year_month not in net_income_data:
+                net_income_data[year_month] = {'date':year_month,'credits': 0, 'debits': 0, 'net': 0}
+            
+            if type.lower() == 'credit':
+                net_income_data[year_month]['credits'] += total
+            elif type.lower() == 'debit':
+                net_income_data[year_month]['debits'] += total
+
+            net_income_data[year_month]['net'] = net_income_data[year_month]['credits'] - net_income_data[year_month]['debits']
+        final = list(net_income_data.values())    
+        print(final)
+        return jsonify(final), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500   
+        
     
 if __name__ == '__main__':
     app.run(debug=True)

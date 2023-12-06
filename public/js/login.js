@@ -8,7 +8,8 @@ export default {
             user: {
                 full_name: '',
                 email: '',
-                password: ''
+                password: '',
+                reg_code:''
             }  
         }
 
@@ -58,6 +59,9 @@ export default {
                 <input class="w3-input" type="password" v-model="user.password" required placeholder="Password">
             </p>
             <p>
+                <input class="w3-input" type="text" v-model="user.reg_code" required placeholder="Registration Code">
+            </p>
+            <p>
                 <button class="w3-btn w3-teal">Register</button>
             </p>
             <p class="w3-center">
@@ -84,6 +88,15 @@ export default {
                     this.$emit('loggedin', true)
                 })
                 .catch(error => {
+                    if (error.response && error.response.status === 401 ) {
+                        if (error.response.data) {
+                            
+                            alert('Login failed: please try again');
+                        } else {
+                            alert('Login failed due to a bad request.');
+                        }
+
+                    }
                     console.error('There was an error!', error);
                     this.loggedIn = false;
                     this.$emit('loggedin', false)
@@ -95,11 +108,24 @@ export default {
                     // Handle success
                     alert('Registration successful. You can now log in.');
                     // Redirect to login page or directly log in the user
-                    window.location.href = '/login.html';
+                    window.location.href = '/';
                 })
                 .catch(error => {
-                    console.error('There was an error!', error);
-                    alert('Registration failed.');
+                    if (error.response && error.response.status === 400 || error.response.status === 409) {
+                        // Handle 400 error specifically
+                        console.error('Bad request error:', error.response);
+                        if (error.response.data) {
+                            // You can use error.response.data here
+                            alert('Registration failed: ' + error.response.data.message);
+                        } else {
+                            alert('Registration failed due to a bad request.');
+                        }
+                    } else {
+                        console.error('There was an error!', error);
+                        alert('Registration failed.');
+
+                    }
+
                 });
         }
     }
