@@ -132,7 +132,7 @@ const muunMain = {
 
 
 const ajx = axios.create({
-    baseURL: 'http://127.0.0.1:5000/',
+    baseURL: `${window.location.protocol}//${window.location.host}/`,
     timeout: 1000
 });
 
