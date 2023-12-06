@@ -150,10 +150,15 @@ ajx.interceptors.request.use(
 ajx.interceptors.response.use(
     response => response,
     error => {
-        if (error.response.status === 401) {
-            localStorage.removeItem('access_token')
-            window.location.href = "/";
+        if (error.response.status){
+            if (error.response.status === 401) {
+                localStorage.removeItem('access_token')
+                window.location.href = "/";
+            }
+        }else{
+            console.log(error)
         }
+        
         return Promise.reject(error);
     }
 );
