@@ -50,6 +50,17 @@ export default {
                     handleResponseError(error)
                 });
         },
+        deleteTransaction(id){
+            ajx.delete('/delete_transaction/'+id)
+            .then(response => {
+                this.gettransactions()
+
+            })
+            .catch(error => {
+                alert("Failed to delete transaction")
+            });
+
+        },
         submitTransaction() {
             let app = this;
 
@@ -79,7 +90,7 @@ export default {
             }
      
         },
-        editTransaction(transactionId) {
+        editTransaction(transactionId) { //@click="this.editTransaction(tr.transaction_id)"
             const transactionToEdit = this.transactions.find(tr => tr.transaction_id === transactionId);
             if (transactionToEdit) {
                 this.transaction = transactionToEdit;
@@ -148,16 +159,18 @@ export default {
                         <th>Account</th>
                         <th>Category</th> 
                         <th>Type</th>  
-                        <th>Date</th>           
+                        <th>Date</th>
+                        <th></th>           
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="tr in transactions" :key="tr.id" @click="this.editTransaction(tr.transaction_id)">
+                    <tr v-for="tr in transactions" :key="tr.id" >
                         <td>{{ formatCurrency(tr.amount) }}</td>
                         <td>{{ tr.account }}</td> 
                         <td>{{ tr.category }}</td> 
                         <td>{{ tr.type }}</td>
-                        <td>{{ tr.date }}</td>    
+                        <td>{{ tr.date }}</td>
+                        <td><span class="w3-text-grey w3-large" @click="deleteTransaction(tr.transaction_id)"><i class="fa fa-trash"></i></span></td>    
                     </tr>
                 </tbody>
             </table>

@@ -330,7 +330,27 @@ def get_transactions():
         ]
         return jsonify(transactions), 200
     except Exception as e:
-        return jsonify({'error': str(e)}), 500    
+        return jsonify({'error': str(e)}), 500   
+    
+@app.route('/delete_transaction/<int:transaction_id>', methods=['DELETE'])
+@jwt_required()
+def delete_transaction(transaction_id):
+    current_user_id = get_jwt_identity()
+
+    transaction = Transaction.query.filter_by(transaction_id=transaction_id, user_id=current_user_id).first()
+
+    if transaction is None:
+        return jsonify({"error": "Transaction not found or not authorized to delete"}), 404
+
+    db.session.delete(transaction)
+    try:
+        db.session.commit()
+        return jsonify({"message": "Transaction deleted successfully."}), 200
+    except Exception as e:
+        db.session.rollback()
+        print(str(e))
+        return jsonify({"error": str(e)}), 500
+     
     
 @app.route('/update_transaction/<int:transaction_id>', methods=['PUT'])
 @jwt_required()
@@ -374,7 +394,7 @@ def get_monthly_net_income():
             user_id=current_user_id
         ).group_by(
             'year', 'month', Transaction.type
-        ).all()
+        ).order_by('year', 'month', Transaction.type).all()
         print(monthly_totals)
         # Prepare the net income data
         net_income_data = {}
