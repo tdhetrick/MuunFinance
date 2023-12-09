@@ -29,13 +29,13 @@ export default {
         </div>
         <form class="w3-container" @submit.prevent="login">
             <p>
-                <input class="w3-input" type="email" v-model="user.email" required placeholder="Email">
+                <input class="w3-input" type="email" v-model="user.email" required placeholder="Email" id="email">
             </p>
             <p>
-                <input class="w3-input" type="password" v-model="user.password" required placeholder="Password">
+                <input class="w3-input" type="password" v-model="user.password" required placeholder="Password" id="password">
             </p>
             <p>
-                <button class="w3-btn w3-teal">Login</button>
+                <button class="w3-btn w3-teal" id="login_btn">Login</button>
             </p>
             <p class="w3-center">
                 <a href="#" @click="toggleForm">Need an account? Register</a>
@@ -128,6 +128,9 @@ export default {
 
                 });
         }
+    },
+    mounted(){
+        document.title = 'MuunFinance Login';
     }
 }
 

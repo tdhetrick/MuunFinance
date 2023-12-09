@@ -78,5 +78,7 @@ export default  {
     mounted(){
         this.getTransactions()
         this.getAccounts()
+        document.title = 'MuunFinance Homepage';
+        
     }
 }

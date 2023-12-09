@@ -68,7 +68,11 @@ def register_user():
 @app.route('/login', methods=['POST'])
 def login_user():
     data = request.get_json()
-    user = User.query.filter_by(email=data['email']).first()
+    
+    if not data.get('password') or not data.get('email'):
+        return make_response('Missing Data', 400)
+    
+    user = User.query.filter_by(email=data['email']).first() 
     
     if not user or not bcrypt.checkpw(data['password'].encode('utf-8'),user.password_hash.encode('utf-8')):
     
