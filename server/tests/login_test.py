@@ -13,8 +13,8 @@ def test_login(webdriver: Chrome, eyes: Eyes) -> None:
   eyes.check(Target.window().fully().with_name("MuunFinance Login"))
 
   # Perform login.
-  webdriver.find_element(By.ID, "email").send_keys("todd@todd.com")
-  webdriver.find_element(By.ID, "password").send_keys("123456")
+  webdriver.find_element(By.ID, "email").send_keys("dave@dave.com")
+  webdriver.find_element(By.ID, "password").send_keys("thedave")
   webdriver.find_element(By.ID, "login_btn").click()
 
   # Verify the full main page loaded correctly.
