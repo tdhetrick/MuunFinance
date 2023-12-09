@@ -31,7 +31,7 @@ How to:
 - E2E testing was performed using pytest and selenium.webdriver in the login_test.py
 - Visual regression testing pytest, selenium and ApliTools eyes api in the login_test.py
 
-![Example Image](docs/dashCapture.png)
+![Example Image](/docs/dashCapture.PNG)
 
 
 
