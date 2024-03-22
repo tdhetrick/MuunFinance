@@ -1,8 +1,8 @@
-from sqlalchemy import ForeignKey
+from sqlalchemy import JSON, ForeignKey
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
-from database import db
+from modules.database import db
 
 db = SQLAlchemy()
 
@@ -109,3 +109,16 @@ class Log(db.Model):
     ip_address = db.Column(db.String(100))
     user_agent = db.Column(db.String(255))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+
+
+class ImportConfig(db.Model):
+    __tablename__ = 'import_configs'
+
+    config_id = db.Column(db.Integer, primary_key=True)
+    account_id = db.Column(db.Integer, ForeignKey('accounts.account_id'), nullable=False)
+    delimiter = db.Column(db.String(10), nullable=False)
+    date_format = db.Column(db.String(50), nullable=False)
+    column_mapping = db.Column(JSON)
+
+    account = relationship("Account", backref="import_configs")

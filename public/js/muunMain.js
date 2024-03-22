@@ -82,15 +82,21 @@ const muunMain = {
                     this.timeLeft -= 1;
                 } else {
                     this.clearTimer();
-
                 }
             }, 1000);
+        
+            this.warningTimer = setTimeout(() => {
+                alert('Your session will expire soon!');
+            }, 55000); // This will warn the user 5 seconds before the timeout
+        },
+        beforeDestroy() {
+            this.clearTimer();
+            clearTimeout(this.warningTimer);
         },
         clearTimer() {
             clearInterval(this.timer);
-            
             this.timer = null;
-            this.logout()
+            //this.logout();
         },
         resetTimer(){
             this.timeLeft = 60;
@@ -123,6 +129,7 @@ const muunMain = {
     },
     beforeDestroy() {
         this.clearTimer();
+        
 
         window.removeEventListener('click', this.resetTimer);
         window.removeEventListener('keypress', this.resetTimer);
@@ -133,7 +140,7 @@ const muunMain = {
 
 const ajx = axios.create({
     baseURL: `${window.location.protocol}//${window.location.host}/`,
-    timeout: 1000
+    timeout: 5000,
 });
 
 ajx.interceptors.request.use(

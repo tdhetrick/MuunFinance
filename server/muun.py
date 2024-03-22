@@ -5,13 +5,16 @@ from flask_jwt_extended import JWTManager, create_access_token, create_refresh_t
 from flask_bcrypt import Bcrypt
 from datetime import timedelta
 import os
-from database import db
+from modules.database import db
 import bcrypt
+from modules.importer import TransactionImporter
 
 app = Flask(__name__)
 app.secret_key = 'darthMaulIsMuun'
 
-from model import *
+from modules.model import *
+from werkzeug.utils import secure_filename
+
 
 
 # Configure Flask app
@@ -414,7 +417,56 @@ def get_monthly_net_income():
         return jsonify(final), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500   
+ 
+@app.route('/upload', methods=['POST'])
+def upload_file():
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file part in the request'}), 400
+
+    file = request.files['file']
+    file_content = file.read().decode('utf-8')
+    account_id = request.form.get('account_id')
+
+    if file.filename == '':
+        return jsonify({'error': 'No selected file'}), 400
+
+    if file and account_id:
+        importer = TransactionImporter(file_content, account_id)
         
+
+        existing_config = importer.has_existing_config()
+        if existing_config:
+
+            importer.import_transactions(existing_config)
+            pass
+        else:
+            # Respond with the detected configuration for the user to verify
+            detected_config = importer.detect_configuration()
+            return jsonify(detected_config), 200
+    else:
+        return jsonify({'error': 'Invalid request'}), 400   
+    
+@app.route('/save_mapping', methods=['POST'])
+def save_mapping():
+    mapping = request.get_json()
+
+    if not mapping:
+        return jsonify({'error': 'No mapping provided'}), 400
+
+    account_id = mapping.get('account_id')
+    if not account_id:
+        return jsonify({'error': 'No account_id provided'}), 400
+
+    import_config = ImportConfig.query.filter_by(account_id=account_id).first()
+    if not import_config:
+        import_config = ImportConfig(account_id=account_id)
+
+    import_config.column_mapping = mapping.get('column_mapping')
+
+    db.session.add(import_config)
+    db.session.commit()
+
+    return jsonify({'message': 'Mapping saved successfully'}), 200
     
 if __name__ == '__main__':
     app.run(host='0.0.0.0',debug=True)

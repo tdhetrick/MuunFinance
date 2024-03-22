@@ -6,7 +6,9 @@ export default  {
                 balance: 0,
                 account_type: ''
             },
-            accounts: []
+            accounts: [],
+            file: '',
+            mapping:null
         };
     },
     methods: {
@@ -34,6 +36,37 @@ export default  {
         },
         formatCurrency(value) {
             return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
+        },
+        handleFileUpload(){
+            this.file = this.$refs.file.files[0];
+        },
+        uploadFile() {
+            let formData = new FormData();
+            formData.append('file', this.file);
+            formData.append('account_id', this.account_id);  // replace with actual account id
+        
+            ajx.post('/upload', formData)  // replace with actual upload URL
+                .then(response => {
+                    if (response.data.mapping) {
+                        this.mapping = response.data.mapping;
+                    } else {
+                        console.log(response.data);
+                    }
+                })
+                .catch(error => {
+                    console.error(error);
+                });
+        },
+        saveMapping() {
+            ajx.post('/api/save_mapping', this.mapping)
+                .then(response => {
+                    // Handle the response
+                    console.log(response.data);
+                })
+                .catch(error => {
+                    // Handle the error
+                    console.error(error);
+                });
         }
     },
     template: `
@@ -86,7 +119,29 @@ export default  {
                 </p>
             </form>
         </div>
-    
+        <form @submit.prevent="uploadFile">
+            <p>
+                <input type="file" id="file" ref="file" v-on:change="handleFileUpload()"/>
+            </p>
+            <p>
+                <button class="w3-btn w3-blue" type="submit">Upload</button>
+            </p>
+        </form>
+
+        <div id="mapper" class="w3-container form-container" v-if="mapping">
+            <h2>Configure Mapping</h2>
+            <form @submit.prevent="saveMapping" class="w3-container w3-card-4 w3-light-grey w3-text-blue w3-margin w3-padding" aria-label="Configure Mapping Form">
+                <p v-for="(field, index) in transactionFields" :key="index">
+                    <label :for="field" class="w3-text-blue"><b>{{ field }}</b></label>
+                    <select :id="field" class="w3-select w3-border" v-model="mapping[field]" required>
+                        <option v-for="(importField, index) in importFields" :key="index" :value="importField">{{ importField }}</option>
+                    </select>
+                </p>
+                <p>
+                    <button type="submit" class="w3-btn w3-blue">Save Mapping</button>
+                </p>
+            </form>
+        </div>
     `,
     mounted(){
         this.getAccounts()
