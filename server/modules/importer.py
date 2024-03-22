@@ -5,6 +5,7 @@ class TransactionImporter:
     def __init__(self, file_content,account_id):
         self.file_content = file_content
         self.account_id = account_id
+        self.required_fields = ['amount', 'description', 'type', 'date']
 
     def detect_delimiter(self):      
         first_line = self.file_content.split('\n')[0]
@@ -18,8 +19,7 @@ class TransactionImporter:
             return None
 
     def detect_configuration(self):
-        
-        lines = self.file_content
+        lines = self.file_content.split('\n')
         delimiter = self.detect_delimiter()
         num_columns = len(lines[0].split(delimiter))
         num_rows = len(lines)
@@ -30,7 +30,7 @@ class TransactionImporter:
         }
 
     def detect_header(self):
-        first_line = self.file_content.split('\n')[0]
+        first_line = self.file_content.replace('\r\n', '\n').split('\n')[0]
         delimiter = self.detect_delimiter()
         headers = first_line.split(delimiter)
         return headers if not any(header.isdigit() for header in headers) else None

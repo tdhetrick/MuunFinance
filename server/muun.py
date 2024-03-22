@@ -437,11 +437,16 @@ def upload_file():
         existing_config = importer.has_existing_config()
         if existing_config:
 
-            importer.import_transactions(existing_config)
-            pass
+            res = importer.import_transactions(existing_config)
+            return jsonify(res), 200
         else:
             # Respond with the detected configuration for the user to verify
             detected_config = importer.detect_configuration()
+            headers = importer.detect_header()
+            detected_config['importFields'] = headers
+            required_fields = importer.required_fields
+            detected_config['transactionFields'] = required_fields
+            detected_config['mapping'] = {header: None for header in headers} if headers else {}
             return jsonify(detected_config), 200
     else:
         return jsonify({'error': 'Invalid request'}), 400   
@@ -449,7 +454,7 @@ def upload_file():
 @app.route('/save_mapping', methods=['POST'])
 def save_mapping():
     mapping = request.get_json()
-
+    print (mapping)
     if not mapping:
         return jsonify({'error': 'No mapping provided'}), 400
 
